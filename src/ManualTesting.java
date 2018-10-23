@@ -1,11 +1,12 @@
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -15,150 +16,87 @@ public class ManualTesting {
 	static double num = 0;
 
 	public static void main(String[] args) {
-		// testWind();
-		new SunFactorVisualTester();
-	}
-
-	static void testWind() {
-		new Thread(new Runnable() {
+		new VisualTester<Double>(new SunFactor(), 4, 30) {
+			@Override
+			public void visualize(int x, int y, int width, int height, Graphics g, Double value) {
+				int intensityRGB = (int) (value * 255);
+				g.setColor(new Color(intensityRGB, intensityRGB, intensityRGB));
+				g.fillRect(x, y, width, height);
+			}
+		};
+		new VisualTester<Double>(new WindFactor(), 4, 45) {
+			double lines = 5, currentLine = 0, currentX = -1;
 
 			@Override
-			public void run() {
-				WindFactor f = new WindFactor();
-				LocalDateTime d = LocalDateTime.now();
-				while (true) {
-					try {
-						Thread.sleep(25);
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					double v = f.next(d);
-					avg += v;
-					System.out.println(v + " \t->\t" + avg / ++num);
+			public void visualize(int x, int y, int width, int height, Graphics g, Double value) {
+				if (currentX != x) {
+					currentX = x;
+					currentLine = currentLine == lines - 1 ? 0 : currentLine + 1;
 				}
+				int yP = (int) (y + currentLine * height / lines);
+				System.out.println(x + " , " + y + ", " + currentLine + " , " + yP);
+				g.drawString("" + Math.round(value), x, yP);
 			}
-		}).start();
+		};
 	}
 
-	static class SunFactorVisualTester extends JFrame {
-		private SunFactor factor = new SunFactor();
+	abstract static class VisualTester<E> extends JFrame {
+		private EnvironmentFactor<E> factor;
+		private HashMap<Integer, String> dataCoords = new HashMap<>();
+		protected int xS, yS;
 
-		public SunFactorVisualTester() {
-			setSize(800, 300);
+		public VisualTester(EnvironmentFactor<E> f, int xScale, int yScale) {
+			factor = f;
+			xS = xScale;
+			yS = yScale;
 			setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			add(new MainPanel(), BorderLayout.CENTER);
+			pack();
+			setResizable(false);
 			setVisible(true);
 		}
 
-		class MainPanel extends JPanel {
-			@Override
-			protected void paintComponent(Graphics gr) {
-				super.paintComponent(gr);
-				Graphics2D g = (Graphics2D) gr;
-				for (int x = 0; x < getWidth(); x++) {
-					for (int y = 0; y < getHeight(); y++) {
-						int intensityRGB = (int) (dataFromCoords(x, y)[4] * 255);
-						g.setColor(new Color(intensityRGB, intensityRGB, intensityRGB));
-						g.fillRect(x, y, 1, 1);
-					}
-				}
-			}
+		public abstract void visualize(int x, int y, int width, int height, Graphics g, E value);
 
-			private double[] dataFromCoords(int x, int y) {
-				int dayOfYear = (int) (x / (getWidth() / 365.0)) + 1;
-				int minute = (int) (y / (getHeight() / 24.0 / 60.0));
-				int hour = minute / 60;
-				int currentMonthDays = 31;
-				int month = 12;
-				int daysT = 365;
-				int day = currentMonthDays - (daysT - dayOfYear);
-				if (dayOfYear <= daysT - currentMonthDays) {
-					daysT -= currentMonthDays;
-					currentMonthDays = 30;
-					month = 11;
-					day = currentMonthDays - (daysT - dayOfYear);
-				}
-				if (dayOfYear <= daysT - currentMonthDays) {
-					daysT -= currentMonthDays;
-					currentMonthDays = 31;
-					month = 10;
-					day = currentMonthDays - (daysT - dayOfYear);
-				}
-				if (dayOfYear <= daysT - currentMonthDays) {
-					daysT -= currentMonthDays;
-					currentMonthDays = 30;
-					month = 9;
-					day = currentMonthDays - (daysT - dayOfYear);
-				}
-				if (dayOfYear <= daysT - currentMonthDays) {
-					daysT -= currentMonthDays;
-					currentMonthDays = 31;
-					month = 8;
-					day = currentMonthDays - (daysT - dayOfYear);
-				}
-				if (dayOfYear <= daysT - currentMonthDays) {
-					daysT -= currentMonthDays;
-					currentMonthDays = 31;
-					month = 7;
-					day = currentMonthDays - (daysT - dayOfYear);
-				}
-				if (dayOfYear <= daysT - currentMonthDays) {
-					daysT -= currentMonthDays;
-					currentMonthDays = 30;
-					month = 6;
-					day = currentMonthDays - (daysT - dayOfYear);
-				}
-				if (dayOfYear <= daysT - currentMonthDays) {
-					daysT -= currentMonthDays;
-					currentMonthDays = 31;
-					month = 5;
-					day = currentMonthDays - (daysT - dayOfYear);
-				}
-				if (dayOfYear <= daysT - currentMonthDays) {
-					daysT -= currentMonthDays;
-					currentMonthDays = 30;
-					month = 4;
-					day = currentMonthDays - (daysT - dayOfYear);
-				}
-				if (dayOfYear <= daysT - currentMonthDays) {
-					daysT -= currentMonthDays;
-					currentMonthDays = 31;
-					month = 3;
-					day = currentMonthDays - (daysT - dayOfYear);
-				}
-				if (dayOfYear <= daysT - currentMonthDays) {
-					daysT -= currentMonthDays;
-					currentMonthDays = 28;
-					month = 2;
-					day = currentMonthDays - (daysT - dayOfYear);
-				}
-				if (dayOfYear <= daysT - currentMonthDays) {
-					daysT -= currentMonthDays;
-					currentMonthDays = 31;
-					month = 1;
-					day = currentMonthDays - (daysT - dayOfYear);
-				}
-				minute %= 60;
-				String str = "2018" + (month < 10 ? "-0" : "-") + month + (day < 10 ? "-0" : "-") + day + " "
-						+ (hour < 10 ? "0" : "") + hour + ":" + (minute < 10 ? "0" : "") + minute % 60;
-				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-				LocalDateTime dateTime = LocalDateTime.parse(str, formatter);
-				return new double[] { month, day, hour, minute, factor.getMonth(month - 1).getIntensity(dateTime) };
-			}
+		class MainPanel extends JPanel {
 
 			public MainPanel() {
+				setSize(365 * xS, 24 * yS);
+				setPreferredSize(new Dimension(365 * xS, 24 * yS));
+				setMinimumSize(new Dimension(365 * xS, 24 * yS));
+				setMaximumSize(new Dimension(365 * xS, 24 * yS));
 				addMouseMotionListener(new MouseMotionAdapter() {
 					@Override
 					public void mouseMoved(MouseEvent e) {
 						// TODO Auto-generated method stub
-						double[] data = dataFromCoords(e.getX(), e.getY());
-						setToolTipText(data[0] + "/" + data[1] + " " + data[2] + ":" + data[3] + " = " + data[4]);
+						int x = e.getX();
+						int y = e.getY();
+						setToolTipText(dataCoords.get(x * 42 + y * 91 + x * y));
 						super.mouseMoved(e);
 					}
 				});
 			}
+
+			@Override
+			protected void paintComponent(Graphics gr) {
+				super.paintComponent(gr);
+				Graphics2D g = (Graphics2D) gr;
+				int yStep = getHeight() / 24;
+				int xStep = getWidth() / 365;
+				for (int x = 0; x < getWidth(); x += xStep) {
+					for (int y = 0; y < getHeight(); y += yStep) {
+						for (int x0 = x; x0 < x + xStep; x0++) {
+							for (int y0 = y; y0 < y + yStep; y0++) {
+								dataCoords.put(x0 * 42 + y0 * 91 + x0 * y0,
+										Simulation.currentSimulation.getCurrentDateTime().toString() + " -> "
+												+ factor.value().toString());
+							}
+						}
+						visualize(x, y, xStep, yStep, g, factor.value());
+						Simulation.currentSimulation.step();
+					}
+				}
+			}
 		}
 	}
-
 }

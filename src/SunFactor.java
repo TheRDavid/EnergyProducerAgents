@@ -1,7 +1,6 @@
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 
-public class SunFactor {
+public class SunFactor implements EnvironmentFactor<Double> {
 	private ArrayList<MonthSunTime> monthlySunTimes = new ArrayList<>();
 
 	public SunFactor() {
@@ -31,14 +30,9 @@ public class SunFactor {
 				new double[] { 7 * 60 + 04, 17 * 60 + 54, 7 * 60 + 25, 18 * 60 + 01 }));
 	}
 
-	/**
-	 * Ignored currentDate, wind speed is generated as:
-	 * 
-	 * @param currentDate
-	 * @return new wind speed
-	 */
-	public double next(LocalDateTime currentDate) {
-		return monthlySunTimes.get(currentDate.getMonthValue() - 1).getIntensity(currentDate);
+	public Double value() {
+		return monthlySunTimes.get(Simulation.currentSimulation.getCurrentDateTime().getMonthValue() - 1)
+				.getIntensity();
 	}
 
 	public class MonthSunTime {
@@ -80,9 +74,11 @@ public class SunFactor {
 		 * @param date
 		 * @return
 		 */
-		public double getIntensity(LocalDateTime date) {
-			int day = date.getDayOfMonth() - 1;
-			int minute = date.getHour() * 60 + date.getMinute();
+		public double getIntensity() {
+			int hour = Simulation.currentSimulation.getCurrentDateTime().getHour();
+			int day = hour;
+			int minute = hour * 60 + Simulation.currentSimulation.getCurrentDateTime().getMinute();
+			int monthValue = Simulation.currentSimulation.getCurrentDateTime().getMonthValue();
 			double intensity = 0;
 			/*
 			 * System.out.println( "Is " + minute + " between " + twilightTimes[day][0] +
@@ -96,7 +92,7 @@ public class SunFactor {
 			if (dayLightTimes[day][1] <= minute && minute <= twilightTimes[day][1])
 				intensity = 1 - (dayLightTimes[day][1] - minute) / (dayLightTimes[day][1] - twilightTimes[day][1]);
 			// Consider cloudy months
-			switch (date.getMonthValue()) {
+			switch (monthValue) {
 			case 1:
 				intensity *= .5; // Jan
 				break;

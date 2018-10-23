@@ -1,6 +1,6 @@
 import java.time.LocalDateTime;
 
-public class WindFactor {
+public class WindFactor implements EnvironmentFactor<Double>{
 	private double averageStrength = 18, maxVariation = 12;
 	private double currentStrength = averageStrength, trend = 2 * Math.random() - 1;
 
@@ -10,7 +10,7 @@ public class WindFactor {
 	 * @param currentDate
 	 * @return new wind speed
 	 */
-	public double next(LocalDateTime currentDate) {
+	public Double value() {
 		double deviation = currentStrength - averageStrength;
 		trend = trend > 0 ? Math.random() : -Math.random();
 		boolean oppositeSign = (trend < 0 && deviation > 0) || (trend > 0 && deviation < 0);
