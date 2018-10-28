@@ -1,32 +1,38 @@
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class CentralBox {
-	private Balance positivePastBalance = new Balance();
-	private Balance negativePastBalance = new Balance();
+public abstract class CentralBox extends Agent {
+	private double sold = 0, bought = 0, moneyBalance = 0;
 	protected Balance totalBalance = new Balance();
 	protected List<Consumer> consumers = new ArrayList<>();
 
+	public static final CentralBox noneBox = new CentralBox() {
+
+		@Override
+		public void act() {
+			// empty, but totes intentionally
+		}
+	};
+
 	public void register(Consumer c) {
 		consumers.add(c);
-		totalBalance.energy += c.getBalance().energy;
+		totalBalance.generated += c.getBalance().generated;
+		totalBalance.consumed += c.getBalance().consumed;
 	}
 
 	protected void noteBalance() {
-		if (totalBalance.energy > 0)
-			positivePastBalance.energy += totalBalance.energy;
-		else {
-			negativePastBalance.energy -= totalBalance.energy;
+		if (totalBalance.money > 0) {
+			sold += totalBalance.generated - totalBalance.consumed;
+		} else {
+			bought += totalBalance.consumed - totalBalance.generated;
 		}
-		if (totalBalance.money > 0)
-			positivePastBalance.money += totalBalance.money;
-		else {
-			negativePastBalance.money -= totalBalance.money;
-		}
-		System.out.println("ENRG: " + positivePastBalance.energy + " - " + negativePastBalance.energy);
-		System.out.println("EURO: " + positivePastBalance.money + " - " + negativePastBalance.money);
+		moneyBalance += totalBalance.money;
 	}
 
-	public abstract void process();
+	@Override
+	public String toString() {
+		return "Sold / Bought: \n" + Util.round(sold / 1000, 2) + " / " + Util.round(bought / 1000, 2) + " kW/h\n"
+				+ Util.round(Util.ctToEU(moneyBalance), 2) + " €";
+	}
 
 }

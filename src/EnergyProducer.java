@@ -1,5 +1,5 @@
 
 public interface EnergyProducer {
-	public double produce();
+	public double value();
 
 }

@@ -1,17 +1,13 @@
 public class NetworkManager {
 
-	private static double tax = 15.5; // energy tax + btw
+	private static double tax = 15.5 / 1000; // energy tax + btw -> convert from kW to W
 
-	public double buy(double kWh) {
-		return kWh * tax + kWh * (Double) Simulation.currentSimulation.environmentValue(PriceFactor.class);
+	public double buy(double W) {
+		return W * tax + W * (Double) Simulation.currentSimulation.environmentValue(PriceFactor.class);
 	}
 
-	public double sell(double kWh) {
-		return kWh * (Double) Simulation.currentSimulation.environmentValue(PriceFactor.class);
+	public double sell(double W) {
+		return W * (Double) Simulation.currentSimulation.environmentValue(PriceFactor.class);
 	}
-	
-	public double trade(double kWh) {
-		return kWh < 0 ? buy(kWh) : sell(kWh);
-	}
-	
+
 }

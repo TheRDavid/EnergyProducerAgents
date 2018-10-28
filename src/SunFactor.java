@@ -80,11 +80,6 @@ public class SunFactor implements EnvironmentFactor<Double> {
 			int minute = hour * 60 + Simulation.currentSimulation.getCurrentDateTime().getMinute();
 			int monthValue = Simulation.currentSimulation.getCurrentDateTime().getMonthValue();
 			double intensity = 0;
-			/*
-			 * System.out.println( "Is " + minute + " between " + twilightTimes[day][0] +
-			 * " and " + twilightTimes[day][1] + "?"); System.out .println("Or even " +
-			 * " between " + dayLightTimes[day][0] + " and " + dayLightTimes[day][1] + "?");
-			 */
 			if (dayLightTimes[day][0] <= minute && minute <= dayLightTimes[day][1])
 				intensity = 1.0;
 			if (twilightTimes[day][0] <= minute && minute <= dayLightTimes[day][0])

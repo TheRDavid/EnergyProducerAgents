@@ -7,19 +7,23 @@ public class Simulation implements Runnable {
 	private LocalDateTime currentDateTime;
 	private List<EnvironmentFactor<?>> environmentFactors = new ArrayList<>();
 
+	private View view;
 	private Strategy strategy;
 	public static final Simulation currentSimulation = new Simulation();
 	private Consumer[] consumerAgents;
-	public boolean running = false, stopped = false;
-	public double speed;
-	private CentralBox centralBox;
+	private boolean running = false, stopped = false;
+	private double speed;
+	private CentralBox centralBox = CentralBox.noneBox;
 	private NetworkManager networkManager = new NetworkManager();
 
 	private Simulation() { // singleton
 	}
 
-	public void start(Strategy s, double speed, Consumer[] consumers, String startDate) {
+	public void start(Strategy s, double speed, Consumer[] consumers, String startDate, View v) {
+		view = v;
 		if (s.equals(Strategy.VPP))
+			centralBox = new VPPBox();
+		if (s.equals(Strategy.COMMUNAL))
 			centralBox = new VPPBox();
 		consumerAgents = consumers;
 		this.speed = speed;
@@ -43,15 +47,12 @@ public class Simulation implements Runnable {
 					e.printStackTrace();
 				}
 				currentDateTime = currentDateTime.plusHours(1);
-				System.out.println("Time: " + currentDateTime.toString());
 
 				for (Consumer c : consumerAgents) {
 					c.act();
 				}
-				if (!strategy.equals(Strategy.REPOSIT)) {
-					centralBox.process();
-				}
-
+				centralBox.act();
+				view.updateSim();
 			}
 			try {
 				Thread.sleep(1000);
@@ -66,12 +67,28 @@ public class Simulation implements Runnable {
 		return strategy;
 	}
 
+	public double getSpeed() {
+		return speed;
+	}
+
 	public LocalDateTime getCurrentDateTime() {
 		return currentDateTime;
 	}
 
 	public NetworkManager getNetworkManager() {
 		return networkManager;
+	}
+
+	public CentralBox getCentralBox() {
+		return centralBox;
+	}
+
+	public Consumer[] getConsumerAgents() {
+		return consumerAgents;
+	}
+
+	public void setSpeed(double speed) {
+		this.speed = speed;
 	}
 
 	public void step() {

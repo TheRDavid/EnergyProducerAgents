@@ -5,7 +5,7 @@ public class WindFactor implements EnvironmentFactor<Double>{
 	private double currentStrength = averageStrength, trend = 2 * Math.random() - 1;
 
 	/**
-	 * Ignored currentDate, wind speed is generated as:
+	 * Returns speed in kmh
 	 * 
 	 * @param currentDate
 	 * @return new wind speed
