@@ -1,7 +1,17 @@
+package main;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+
+import agents.Community;
+import environmemnt.EnvironmentFactor;
+import environmemnt.NetworkManager;
+import environmemnt.PriceFactor;
+import environmemnt.SunFactor;
+import environmemnt.WindFactor;
+import ui.History;
+import ui.View;
 
 public class Simulation implements Runnable {
 	private LocalDateTime currentDateTime;

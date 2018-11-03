@@ -1,3 +1,4 @@
+package ui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -9,7 +10,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.time.LocalDateTime;
-import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +20,14 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
+
+import agents.Community;
+import agents.Consumer;
+import environmemnt.PriceFactor;
+import environmemnt.SunFactor;
+import environmemnt.WindFactor;
+import main.Simulation;
+import main.Util;
 
 public class View extends JFrame {
 
@@ -58,9 +66,7 @@ public class View extends JFrame {
 				
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					System.out.println("0");
 					new HistoryView(Simulation.currentSimulation.hist.dataCopy());
-					System.out.println("0.2");
 				}
 			});
 			add(overviewButton);

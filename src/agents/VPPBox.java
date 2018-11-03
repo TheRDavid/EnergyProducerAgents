@@ -1,3 +1,8 @@
+package agents;
+
+import main.Simulation;
+import main.Strategy;
+import ui.History;
 
 public class VPPBox extends CentralBox {
 	public VPPBox(int index) {

@@ -1,7 +1,10 @@
+package environmemnt;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+
+import main.Simulation;
 
 public class PriceFactor extends EnvironmentFactor<Double> {
 

@@ -1,13 +1,18 @@
+package ui;
+
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 
+import agents.Agent;
+import main.Strategy;
+
 public class PaintJob {
 	private int currentX, currentY, margin, maxX, y_extra, y_extra_mx, iconSize, baseY;
 	private static final Font agentFont = new Font("Arial", Font.PLAIN, 18);
 	private static final Font strategyFont = new Font("Arial", Font.BOLD, 22);
-	private Color bga = Color.WHITE, bgb = new Color(235,235,235);
+	private Color bga = Color.WHITE, bgb = new Color(235, 235, 235);
 	private static boolean bgab = true;
 
 	public PaintJob(int size, int margin) {
@@ -29,7 +34,7 @@ public class PaintJob {
 			y_extra += 30;
 		}
 
-		for (Agent sub : a.subAgents) {
+		for (Agent sub : a.getSubAgents()) {
 			paintAgent(g, sub, shrink * .75);
 		}
 		if (shrink == 1) {

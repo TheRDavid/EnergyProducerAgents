@@ -1,3 +1,8 @@
+package agents;
+
+import environmemnt.SunFactor;
+import main.Simulation;
+import main.Util;
 
 public class SolarPanel extends Agent implements EnergyProducer {
 	private double squareMeterArea; // A

@@ -1,3 +1,6 @@
+package agents;
+
+import main.Util;
 
 public class Battery extends Agent {
 

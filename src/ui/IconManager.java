@@ -1,7 +1,16 @@
+package ui;
 import java.awt.Image;
 import java.util.Map;
 
 import javax.swing.ImageIcon;
+
+import agents.Balance;
+import agents.Battery;
+import agents.Consumer;
+import agents.RepositBox;
+import agents.SolarPanel;
+import agents.VPPBox;
+import agents.WindTurbine;
 
 public class IconManager {
 

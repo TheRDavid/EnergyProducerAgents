@@ -1,4 +1,7 @@
+package environmemnt;
 import java.util.ArrayList;
+
+import main.Simulation;
 
 public class SunFactor extends EnvironmentFactor<Double> {
 	private ArrayList<MonthSunTime> monthlySunTimes = new ArrayList<>();

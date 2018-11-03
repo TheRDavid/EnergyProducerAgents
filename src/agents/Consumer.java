@@ -1,6 +1,14 @@
+package agents;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
+
+import environmemnt.NetworkManager;
+import environmemnt.PriceFactor;
+import main.Simulation;
+import main.Strategy;
+import main.Util;
+import ui.History;
 
 public class Consumer extends Agent {
 	private EnergyProducer[] energyProducers;
@@ -79,14 +87,8 @@ public class Consumer extends Agent {
 			int hour = Simulation.currentSimulation.getCurrentDateTime().getHour();
 			boolean low = PriceFactor.lowTimes.contains(hour), peak = PriceFactor.peakTimes.contains(hour);
 			NetworkManager manager = Simulation.currentSimulation.getNetworkManager();
-			//if (peak)
-			//	System.out.println("Peak");
-			//if (low)
-			//	System.out.println("Low");
 			if (s.equals(Strategy.Reposit_Aggressive)) {
-				// System.out.println("Agr");
 				if (peak) {
-					// System.out.println("Selling");
 					double earned = manager.sell(bat.getEnergyStored());
 					balance.money += earned;
 					bat.setEnergyStored(0);
@@ -97,9 +99,7 @@ public class Consumer extends Agent {
 
 				}
 			} else if (s.equals(Strategy.Reposit_Defensive)) {
-				//System.out.println("Def");
 				if (low) {
-					//System.out.println("Buying");
 					double spent = manager.buy(bat.getMaxStorage() - bat.getEnergyStored());
 					balance.money -= spent;
 					bat.setEnergyStored(bat.getMaxStorage());
@@ -110,9 +110,7 @@ public class Consumer extends Agent {
 
 				}
 			} else {
-				// System.out.println("Nrm");
 				if (peak && bat.getEnergyStored() / bat.getMaxStorage() > bat.getMinStorageRel()) {
-					// System.out.println("Selling");
 					double sold = bat.getEnergyStored() - bat.getMaxStorage() * bat.getMinStorageRel();
 					double earned = manager.sell(sold);
 					balance.money += earned;
@@ -122,7 +120,6 @@ public class Consumer extends Agent {
 					Simulation.currentSimulation.hist.nextStep[History.W_SOLD + centralBox.index * 6] += sold;
 
 				} else if (low && bat.getEnergyStored() / bat.getMaxStorage() < bat.getMinStorageRel()) {
-					// System.out.println("Buying");
 					double bought = bat.getMaxStorage() * bat.getMinStorageRel() - bat.getEnergyStored();
 					double spent = manager.buy(bought);
 					balance.money -= spent;

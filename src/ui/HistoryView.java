@@ -1,8 +1,10 @@
+package ui;
 import java.awt.BorderLayout;
 import java.util.List;
 
 import javax.swing.JFrame;
 
+import agents.Community;
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
 import javafx.geometry.Insets;
@@ -13,6 +15,7 @@ import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Data;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
+import main.Simulation;
 
 public class HistoryView extends JFrame {
 	private JFXPanel fxPanel = new JFXPanel();
@@ -32,20 +35,15 @@ public class HistoryView extends JFrame {
 	private final List<double[]> data;
 
 	public HistoryView(List<double[]> dataEntries) {
-		System.out.println("1");
 		data = dataEntries;
 		add(fxPanel, BorderLayout.CENTER);
 		setSize(1650, 960);
 		setVisible(true);
-		System.out.println("2");
 		Platform.runLater(new Runnable() {
 			@Override
 			public void run() {
-				System.out.println("3");
 				initFX(fxPanel);
-				System.out.println("4");
 				readData();
-				System.out.println("5");
 			}
 
 		});
@@ -142,7 +140,6 @@ public class HistoryView extends JFrame {
 		}
 		Scene scene = new Scene(grid, Color.ALICEBLUE);
 		scene.getStylesheets().add("style.css");
-		System.out.println(scene.getStylesheets().get(0));
 		return scene;
 	}
 }

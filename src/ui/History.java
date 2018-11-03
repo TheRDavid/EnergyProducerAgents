@@ -1,6 +1,8 @@
+package ui;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+
+import main.Simulation;
 
 public class History {
 	public static final int W_BOUGHT = 0, W_SOLD = 1, CT_SPENT = 2, CT_EARNED = 3, W_BALANCE = 4, CT_BALANCE = 5;
@@ -29,9 +31,6 @@ public class History {
 	}
 
 	public List<double[]> dataCopy() {
-		System.out.println("0.1");
-		System.out.println(new ArrayList<>(entries));
-		System.out.println("0.1.5");
 		return new ArrayList<>(entries);
 	}
 }

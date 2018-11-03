@@ -1,3 +1,12 @@
+package main;
+
+import agents.Community;
+import agents.Consumer;
+import agents.EnergyProducer;
+import agents.SolarPanel;
+import agents.WindTurbine;
+import ui.View;
+
 public class Main {
 	public static void main(String[] args) {
 		new Thread(new Runnable() {

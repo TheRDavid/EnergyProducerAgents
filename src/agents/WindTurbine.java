@@ -1,3 +1,9 @@
+package agents;
+
+import environmemnt.WindFactor;
+import main.Simulation;
+import main.Util;
+
 // Take values from http://www.windturbinestar.com/300w-vertical-wind-turbine.html
 // https://windchallenge.com/the-windleaf/#specs
 public class WindTurbine extends Agent implements EnergyProducer {

@@ -1,3 +1,6 @@
+package agents;
+
+import main.Strategy;
 
 public class Community extends Agent {
 

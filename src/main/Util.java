@@ -1,4 +1,7 @@
+package main;
 import java.util.Collection;
+
+import agents.Consumer;
 
 public class Util {
 	public static final double round(double value, int places) {

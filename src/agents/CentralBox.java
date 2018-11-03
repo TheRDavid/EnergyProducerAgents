@@ -1,5 +1,9 @@
+package agents;
 import java.util.ArrayList;
 import java.util.List;
+
+import main.Strategy;
+import main.Util;
 
 public abstract class CentralBox extends Agent {
 	private double sold = 0, bought = 0, moneyBalance = 0;
