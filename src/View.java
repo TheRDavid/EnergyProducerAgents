@@ -5,9 +5,17 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.time.LocalDateTime;
+import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -23,17 +31,17 @@ public class View extends JFrame {
 	public View() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		add(statusPanel, BorderLayout.NORTH);
-		add(new JScrollPane(simPanel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER), BorderLayout.CENTER);
+		add(new JScrollPane(simPanel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER),
+				BorderLayout.CENTER);
 		add(controlPanel, BorderLayout.SOUTH);
 		pack();
 		setLocationRelativeTo(null);
-		setVisible(true);
 	}
 
 	private class ControlPanel extends JPanel {
 		public ControlPanel() {
 			setLayout(new FlowLayout());
-			add(new JSlider(0, 100, 3) {
+			add(new JSlider(0, 100, 1) {
 				@Override
 				public Dimension getPreferredSize() {
 					return new Dimension(400, 30);
@@ -45,6 +53,17 @@ public class View extends JFrame {
 					Simulation.currentSimulation.setSpeed(getValue());
 				}
 			});
+			JButton overviewButton = new JButton("Overview");
+			overviewButton.addActionListener(new ActionListener() {
+				
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					System.out.println("0");
+					new HistoryView(Simulation.currentSimulation.hist.dataCopy());
+					System.out.println("0.2");
+				}
+			});
+			add(overviewButton);
 		}
 	}
 
@@ -64,16 +83,31 @@ public class View extends JFrame {
 			g.setColor(Color.WHITE);
 			g.setFont(timeFont);
 			LocalDateTime dt = Simulation.currentSimulation.getCurrentDateTime();
-			g.drawString(
-					dt.getDayOfMonth() + "." + dt.getMonthValue() + "." + dt.getYear() + (dt.getHour() < 10 ? " 0" : " ") + dt.getHour() + ":00"
-							+ " / "+Util.round(windSpeed, 2) + " km/h",
-					5, 25);
+			List<String> statusMessages = new ArrayList<>();
+			// Display Date & Time
+			statusMessages.add(dt.getDayOfMonth() + "." + dt.getMonthValue() + "." + dt.getYear()
+					+ (dt.getHour() < 10 ? " 0" : " ") + dt.getHour() + ":00");
+			// Display Wind Speed
+			statusMessages.add(Util.round(windSpeed, 2) + " km/h");
+			// Display Current Price
+			statusMessages.add(
+					(Util.round((double) Simulation.currentSimulation.environmentValue(PriceFactor.class) * 1000, 2))
+							+ "ct / kW");
+			// Display Peak / Low Time in Price
+			statusMessages.add(PriceFactor.peakTimes.contains(dt.getHour()) ? "Peak Price!"
+					: (PriceFactor.lowTimes.contains(dt.getHour()) ? "Lowest Price!" : "Normal Price"));
+			String statusMessage = "";
+			for (String s : statusMessages) {
+				statusMessage += s + " | ";
+			}
+			g.drawString(statusMessage, 5, 25);
 		}
 	}
 
 	private class SimPanel extends JPanel {
 
-		private PaintJob pJob = new PaintJob(100, 120, 1650);
+		private Map<Community, PaintJob> paintJobs = new HashMap<Community, PaintJob>();
+		private boolean initPaintJobs = true;
 
 		public SimPanel() {
 			setPreferredSize(new Dimension(1650, 720));
@@ -81,12 +115,26 @@ public class View extends JFrame {
 
 		@Override
 		protected void paintComponent(Graphics gr) {
+			super.paintComponent(gr);
+			if (initPaintJobs) {
+				for (Community community : Simulation.currentSimulation.getCommunities()) {
+					paintJobs.put(community, new PaintJob(100, 120));
+				}
+				initPaintJobs = false;
+			}
 			Graphics2D g = (Graphics2D) gr;
-			super.paintComponent(g);
-			for (Consumer consumer : Simulation.currentSimulation.getConsumerAgents())
-				pJob.paintAgent(g, consumer, 1);
-			setPreferredSize(new Dimension(getPreferredSize().width, pJob.paintAgent(g, Simulation.currentSimulation.getCentralBox(), 1)));
-			pJob.reset(getParent().getWidth());
+			int baseY = 0;
+			for (Community community : Simulation.currentSimulation.getCommunities()) {
+				PaintJob pj = paintJobs.get(community);
+				pj.reset(getParent().getWidth(), baseY, g, community.getStrategy());
+				for (Consumer c : community.getConsumerAgents())
+					pj.paintAgent(g, c, 1);
+				int lastY = pj.paintAgent(g, community.getCentralBox(), 1);
+				baseY = lastY + 50;
+			}
+			PaintJob.resetBG();
+			setPreferredSize(new Dimension(getPreferredSize().width, baseY));
+			revalidate();
 		}
 	}
 

@@ -34,7 +34,6 @@ public class ManualTesting {
 					currentLine = currentLine == lines - 1 ? 0 : currentLine + 1;
 				}
 				int yP = (int) (y + currentLine * height / lines);
-				System.out.println(x + " , " + y + ", " + currentLine + " , " + yP);
 				g.drawString("" + Math.round(value), x, yP);
 			}
 		};

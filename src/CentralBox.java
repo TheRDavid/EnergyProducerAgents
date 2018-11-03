@@ -5,14 +5,13 @@ public abstract class CentralBox extends Agent {
 	private double sold = 0, bought = 0, moneyBalance = 0;
 	protected Balance totalBalance = new Balance();
 	protected List<Consumer> consumers = new ArrayList<>();
+	protected Strategy strategy;
+	public final int index;
 
-	public static final CentralBox noneBox = new CentralBox() {
-
-		@Override
-		public void act() {
-			// empty, but totes intentionally
-		}
-	};
+	public CentralBox(Strategy s, int index) {
+		strategy = s;
+		this.index = index;
+	}
 
 	public void register(Consumer c) {
 		consumers.add(c);
@@ -27,6 +26,10 @@ public abstract class CentralBox extends Agent {
 			bought += totalBalance.consumed - totalBalance.generated;
 		}
 		moneyBalance += totalBalance.money;
+	}
+
+	public Strategy getStrategy() {
+		return strategy;
 	}
 
 	@Override

@@ -8,31 +8,27 @@ public class Simulation implements Runnable {
 	private List<EnvironmentFactor<?>> environmentFactors = new ArrayList<>();
 
 	private View view;
-	private Strategy strategy;
 	public static final Simulation currentSimulation = new Simulation();
-	private Consumer[] consumerAgents;
 	private boolean running = false, stopped = false;
 	private double speed;
-	private CentralBox centralBox = CentralBox.noneBox;
 	private NetworkManager networkManager = new NetworkManager();
+	private Community[] communities;
+	public History hist;
 
 	private Simulation() { // singleton
 	}
 
-	public void start(Strategy s, double speed, Consumer[] consumers, String startDate, View v) {
+	public void start(double speed, Community[] coms, String startDate, View v) {
+		communities = coms;
 		view = v;
-		if (s.equals(Strategy.VPP))
-			centralBox = new VPPBox();
-		if (s.equals(Strategy.COMMUNAL))
-			centralBox = new VPPBox();
-		consumerAgents = consumers;
 		this.speed = speed;
-		strategy = s;
 		currentDateTime = LocalDateTime.parse(startDate, DateTimeFormatter.ofPattern("yyyy-MM-dd-HH"));
 		environmentFactors.add(new WindFactor());
 		environmentFactors.add(new PriceFactor());
 		environmentFactors.add(new SunFactor());
 		running = true;
+		hist = new History();
+		view.setVisible(true);
 		new Thread(this).run();
 	}
 
@@ -47,24 +43,21 @@ public class Simulation implements Runnable {
 					e.printStackTrace();
 				}
 				currentDateTime = currentDateTime.plusHours(1);
-
-				for (Consumer c : consumerAgents) {
+				for (EnvironmentFactor<?> f : environmentFactors)
+					f.update();
+				for (Community c : communities) {
 					c.act();
 				}
-				centralBox.act();
+				hist.step();
 				view.updateSim();
 			}
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(100);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
-	}
-
-	public Strategy getStrategy() {
-		return strategy;
 	}
 
 	public double getSpeed() {
@@ -79,15 +72,11 @@ public class Simulation implements Runnable {
 		return networkManager;
 	}
 
-	public CentralBox getCentralBox() {
-		return centralBox;
-	}
-
-	public Consumer[] getConsumerAgents() {
-		return consumerAgents;
-	}
-
 	public void setSpeed(double speed) {
+		if (speed == 0)
+			running = false;
+		else
+			running = true;
 		this.speed = speed;
 	}
 
@@ -95,10 +84,14 @@ public class Simulation implements Runnable {
 		currentDateTime = currentDateTime.plusHours(1);
 	}
 
+	public Community[] getCommunities() {
+		return communities;
+	}
+
 	public Object environmentValue(Class factorType) {
 		for (EnvironmentFactor<?> factor : environmentFactors)
 			if (factor.getClass().equals(factorType))
 				return factor.value();
-		return null;
+		return 0;
 	}
 }

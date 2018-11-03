@@ -1,23 +1,29 @@
 
 public class VPPBox extends CentralBox {
+	public VPPBox(int index) {
+		super(Strategy.VPP, index);
+	}
 
 	@Override
 	public void act() {
 		double eTotal = totalBalance.generated - totalBalance.consumed;
 		// don't sell what we have! Distribute it, just buy what we need. Selling is
 		// loosing (tax 'n shit)!
-		if (eTotal > 0)
+		if (eTotal > 0) {
 			totalBalance.money = Simulation.currentSimulation.getNetworkManager().sell(eTotal);
-		else
+			Simulation.currentSimulation.hist.nextStep[History.CT_EARNED+index * 6] = totalBalance.money;
+			Simulation.currentSimulation.hist.nextStep[History.W_SOLD+index * 6] = eTotal;
+		} else {
 			totalBalance.money = -Simulation.currentSimulation.getNetworkManager()
 					.buy(totalBalance.consumed - totalBalance.generated);
-		System.out.println("VPP €: " + totalBalance.money);
+			Simulation.currentSimulation.hist.nextStep[History.CT_SPENT+index * 6] = -totalBalance.money;
+			Simulation.currentSimulation.hist.nextStep[History.W_BOUGHT+index * 6] = totalBalance.consumed
+					- totalBalance.generated;
+		}
 		noteBalance();
 
 		for (Consumer c : consumers) {
 			double share = (c.getBalance().generated - c.getBalance().consumed) / eTotal * totalBalance.money;
-			if (c.subAgents.size() > 0)
-				System.out.println("Share: " + share);
 			c.getBalance().money += share;
 			c.getBalance().generated = 0;
 			c.getBalance().consumed = 0;
@@ -31,7 +37,6 @@ public class VPPBox extends CentralBox {
 
 	@Override
 	public String toString() {
-		// TODO Auto-generated method stub
 		return super.toString();
 	}
 

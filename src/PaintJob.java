@@ -1,17 +1,22 @@
+import java.awt.Color;
 import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 
 public class PaintJob {
-	private int currentX, currentY, margin, maxX, y_extra, y_extra_mx, iconSize;
+	private int currentX, currentY, margin, maxX, y_extra, y_extra_mx, iconSize, baseY;
 	private static final Font agentFont = new Font("Arial", Font.PLAIN, 18);
+	private static final Font strategyFont = new Font("Arial", Font.BOLD, 22);
+	private Color bga = Color.WHITE, bgb = new Color(235,235,235);
+	private static boolean bgab = true;
 
-	public PaintJob(int size, int margin, int maximumX) {
+	public PaintJob(int size, int margin) {
 		this.margin = margin;
 		this.iconSize = size;
-		reset(maximumX);
 	}
 
 	public int paintAgent(Graphics2D g, Agent a, double shrink) {
+		g.setColor(Color.DARK_GRAY);
 		g.setFont(new Font(agentFont.getFontName(), agentFont.getStyle(), (int) (agentFont.getSize() * shrink)));
 		if (currentX >= maxX - iconSize - margin)
 			nextRow();
@@ -45,11 +50,22 @@ public class PaintJob {
 		y_extra_mx = 0;
 	}
 
-	public void reset(int maximumX) {
+	public static void resetBG() {
+		bgab = true;
+	}
+
+	public void reset(int maximumX, int baseY, Graphics g, Strategy s) {
+		this.baseY = baseY;
 		this.maxX = maximumX;
 		currentX = margin / 3;
-		currentY = margin / 3;
+		currentY = margin / 3 + baseY;
 		y_extra = 0;
 		y_extra_mx = 0;
+		g.setColor(bgab ? bga : bgb);
+		bgab = !bgab;
+		g.fillRect(0, baseY, maxX, 5000);
+		g.setColor(Color.blue);
+		g.setFont(strategyFont);
+		g.drawString(s.toString(), currentX, currentY - margin / 6);
 	}
 }

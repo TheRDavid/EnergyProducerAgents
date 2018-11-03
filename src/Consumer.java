@@ -4,6 +4,7 @@ import java.util.Map;
 
 public class Consumer extends Agent {
 	private EnergyProducer[] energyProducers;
+	private CentralBox centralBox;
 	private Balance balance = new Balance();
 	private ConsumerType type;
 
@@ -29,11 +30,110 @@ public class Consumer extends Agent {
 		subAgents.addAll((Collection<? extends Agent>) Arrays.asList(producers));
 	}
 
+	public Consumer(Consumer copy) {
+		this(copy.energyProducers, copy.type);
+	}
+
+	private void baseRepositAct(Battery bat) {
+		double eTotal = balance.generated - balance.consumed;
+		if (eTotal > 0) {
+			if (bat.getEnergyStored() + eTotal < bat.getMaxStorage()) {
+				bat.setEnergyStored(bat.getEnergyStored() + eTotal);
+			} else {
+				double sellAmount = bat.getEnergyStored() + eTotal - bat.getMaxStorage();
+				double earning = Simulation.currentSimulation.getNetworkManager().sell(sellAmount);
+				balance.money += earning;
+				bat.setEnergyStored(bat.getMaxStorage());
+
+				Simulation.currentSimulation.hist.nextStep[History.CT_EARNED + centralBox.index * 6] += earning;
+				Simulation.currentSimulation.hist.nextStep[History.W_SOLD + centralBox.index * 6] += sellAmount;
+
+			}
+		} else {
+			if (bat.getEnergyStored() < -eTotal) {
+				double buyAmount = eTotal + bat.getEnergyStored();
+				double spending = Simulation.currentSimulation.getNetworkManager().buy(buyAmount);
+				balance.money += spending;
+				bat.setEnergyStored(0);
+
+				Simulation.currentSimulation.hist.nextStep[History.CT_SPENT + centralBox.index * 6] -= spending;
+				Simulation.currentSimulation.hist.nextStep[History.W_BOUGHT + centralBox.index * 6] -= buyAmount;
+
+			} else {
+				bat.setEnergyStored(bat.getEnergyStored() + eTotal);
+			}
+		}
+	}
+
 	public void act() {
 		super.act();
 		balance.generated = produceHour();
 		balance.consumed = consumeHour();
-		Simulation.currentSimulation.getCentralBox().register(this);
+
+		Strategy s = centralBox.getStrategy();
+		if (s.equals(Strategy.VPP) || s.equals(Strategy.Communal))
+			centralBox.register(this);
+		else {
+			Battery bat = Util.firstInstanceOfType(Battery.class, subAgents);
+			baseRepositAct(bat);
+			int hour = Simulation.currentSimulation.getCurrentDateTime().getHour();
+			boolean low = PriceFactor.lowTimes.contains(hour), peak = PriceFactor.peakTimes.contains(hour);
+			NetworkManager manager = Simulation.currentSimulation.getNetworkManager();
+			//if (peak)
+			//	System.out.println("Peak");
+			//if (low)
+			//	System.out.println("Low");
+			if (s.equals(Strategy.Reposit_Aggressive)) {
+				// System.out.println("Agr");
+				if (peak) {
+					// System.out.println("Selling");
+					double earned = manager.sell(bat.getEnergyStored());
+					balance.money += earned;
+					bat.setEnergyStored(0);
+
+					Simulation.currentSimulation.hist.nextStep[History.CT_EARNED + centralBox.index * 6] += earned;
+					Simulation.currentSimulation.hist.nextStep[History.W_SOLD + centralBox.index * 6] += bat
+							.getEnergyStored();
+
+				}
+			} else if (s.equals(Strategy.Reposit_Defensive)) {
+				//System.out.println("Def");
+				if (low) {
+					//System.out.println("Buying");
+					double spent = manager.buy(bat.getMaxStorage() - bat.getEnergyStored());
+					balance.money -= spent;
+					bat.setEnergyStored(bat.getMaxStorage());
+
+					Simulation.currentSimulation.hist.nextStep[History.CT_SPENT + centralBox.index * 6] += spent;
+					Simulation.currentSimulation.hist.nextStep[History.W_BOUGHT + centralBox.index * 6] += bat
+							.getMaxStorage() - bat.getEnergyStored();
+
+				}
+			} else {
+				// System.out.println("Nrm");
+				if (peak && bat.getEnergyStored() / bat.getMaxStorage() > bat.getMinStorageRel()) {
+					// System.out.println("Selling");
+					double sold = bat.getEnergyStored() - bat.getMaxStorage() * bat.getMinStorageRel();
+					double earned = manager.sell(sold);
+					balance.money += earned;
+					bat.setEnergyStored(bat.getMaxStorage() * bat.getMinStorageRel());
+
+					Simulation.currentSimulation.hist.nextStep[History.CT_EARNED + centralBox.index * 6] += earned;
+					Simulation.currentSimulation.hist.nextStep[History.W_SOLD + centralBox.index * 6] += sold;
+
+				} else if (low && bat.getEnergyStored() / bat.getMaxStorage() < bat.getMinStorageRel()) {
+					// System.out.println("Buying");
+					double bought = bat.getMaxStorage() * bat.getMinStorageRel() - bat.getEnergyStored();
+					double spent = manager.buy(bought);
+					balance.money -= spent;
+					bat.setEnergyStored(bat.getMaxStorage() * bat.getMinStorageRel());
+
+					Simulation.currentSimulation.hist.nextStep[History.CT_SPENT + centralBox.index * 6] += spent;
+					Simulation.currentSimulation.hist.nextStep[History.W_BOUGHT + centralBox.index * 6] += bought;
+
+				}
+			}
+		}
 	}
 
 	private double produceHour() {
@@ -56,6 +156,14 @@ public class Consumer extends Agent {
 	public String toString() {
 		return Util.round(produceHour() / 1000, 2) + " / " + Util.round(consumeHour() / 1000, 2) + " kWh\n"
 				+ Util.round(Util.ctToEU(balance.money), 2) + " €";
+	}
+
+	public void setCentralBox(CentralBox centralBox) {
+		this.centralBox = centralBox;
+		Strategy s = centralBox.getStrategy();
+		if (s.equals(Strategy.Reposit_Aggressive) || s.equals(Strategy.Reposit_Normal)
+				|| s.equals(Strategy.Reposit_Defensive))
+			subAgents.add(new Battery());
 	}
 
 }

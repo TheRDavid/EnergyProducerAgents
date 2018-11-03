@@ -1,3 +1,4 @@
+import java.util.Collection;
 
 public class Util {
 	public static final double round(double value, int places) {
@@ -32,5 +33,24 @@ public class Util {
 	 */
 	public static final double mshToKmh(double speedMs) {
 		return speedMs * 3.6;
+	}
+
+	public static Consumer[][] getIdenticalLists(Consumer[] consumers, int additionals) {
+		Consumer[][] lists = new Consumer[1 + additionals][];
+		lists[0] = consumers;
+		for (int i = 0; i < additionals; i++) {
+			lists[1 + i] = new Consumer[consumers.length];
+			for (int j = 0; j < consumers.length; j++) {
+				lists[1 + i][j] = new Consumer(consumers[j]);
+			}
+		}
+		return lists;
+	}
+
+	public static <E> E firstInstanceOfType(Class<E> cl, Collection c) {
+		for (Object o : c)
+			if (o.getClass().equals(cl))
+				return (E) o;
+		return null;
 	}
 }

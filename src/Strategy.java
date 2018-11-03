@@ -1,5 +1,5 @@
 
 public enum Strategy {
-	VPP, COMMUNAL, REPOSIT
+	VPP, Communal, Reposit_Normal, Reposit_Aggressive, Reposit_Defensive
 
 }

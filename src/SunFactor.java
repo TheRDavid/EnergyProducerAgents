@@ -1,6 +1,6 @@
 import java.util.ArrayList;
 
-public class SunFactor implements EnvironmentFactor<Double> {
+public class SunFactor extends EnvironmentFactor<Double> {
 	private ArrayList<MonthSunTime> monthlySunTimes = new ArrayList<>();
 
 	public SunFactor() {
@@ -28,10 +28,12 @@ public class SunFactor implements EnvironmentFactor<Double> {
 				new double[] { 6 * 60 + 19, 18 * 60 + 27, 7 * 60 + 3, 17 * 60 + 54 }));
 		monthlySunTimes.add(new MonthSunTime(31, new double[] { 8 * 60 + 27, 16 * 60 + 30, 8 * 60 + 50, 16 * 60 + 36 },
 				new double[] { 7 * 60 + 04, 17 * 60 + 54, 7 * 60 + 25, 18 * 60 + 01 }));
+		value = 0.0;
 	}
 
-	public Double value() {
-		return monthlySunTimes.get(Simulation.currentSimulation.getCurrentDateTime().getMonthValue() - 1)
+	@Override
+	public void update() {
+		value = monthlySunTimes.get(Simulation.currentSimulation.getCurrentDateTime().getMonthValue() - 1)
 				.getIntensity();
 	}
 

@@ -53,8 +53,6 @@ public class WindTurbine extends Agent implements EnergyProducer {
 		double achieved = windSpeed - startWindSpeed;
 		double percentagePower = achieved / range;
 		value = percentagePower * ratedPower;
-		System.out.println("@" + windSpeed + "km/h of rated speed (" + ratedWindSpeed + " km/h) we get"
-				+ percentagePower + "% of " + ratedPower + " W => " + value + " W");
 	}
 
 	@Override
